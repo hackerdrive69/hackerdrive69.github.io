@@ -3,10 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Homepage</title>
+    <title>File Upload</title>
 </head>
 <body>
-    <h1>Welcome to My Hgomepage</h1>
-    <p>This is my personal website hosted on GitHub Pages!</p>
+    <h1>Upload a File</h1>
+    <form id="uploadForm">
+        <input type="file" id="fileInput" required>
+        <button type="submit">Upload</button>
+    </form>
+    <div id="status"></div>
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select a file to upload.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function (event) {
+                const content = event.target.result.split(',')[1]; // Base64 content
+                const fileName = file.name;
+
+                const response = await uploadFileToGitHub(fileName, content);
+                document.getElementById('status').textContent = response ? 'File uploaded successfully!' : 'Failed to upload file.';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        async function uploadFileToGitHub(fileName, content) {
+            const repo = 'hackerdrive69/hackerdrive69.github.io';
+            const branch = 'main'; // Change if necessary
+            const token = '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'; // Replace with your GitHub token
+
+            const url = `https://api.github.com/repos/${repo}/contents/${fileName}`;
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: `Upload ${fileName}`,
+                    content: content,
+                    branch: branch
+                })
+            });
+
+            return response.ok;
+        }
+    </script>
 </body>
 </html>
