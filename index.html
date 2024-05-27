@@ -28,8 +28,18 @@
                 const content = event.target.result.split(',')[1]; // Base64 content
                 const fileName = file.name;
 
-                const response = await uploadFileToGitHub(fileName, content);
-                document.getElementById('status').textContent = response ? 'File uploaded successfully!' : 'Failed to upload file.';
+                try {
+                    const response = await uploadFileToGitHub(fileName, content);
+                    if (response.ok) {
+                        document.getElementById('status').textContent = 'File uploaded successfully!';
+                    } else {
+                        const errorResponse = await response.json();
+                        document.getElementById('status').textContent = `Failed to upload file: ${errorResponse.message}`;
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    document.getElementById('status').textContent = 'Failed to upload file due to an error.';
+                }
             };
             reader.readAsDataURL(file);
         });
@@ -53,7 +63,7 @@
                 })
             });
 
-            return response.ok;
+            return response;
         }
     </script>
 </body>
